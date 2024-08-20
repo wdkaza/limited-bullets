@@ -37,7 +37,7 @@ public:
     // }
 
     void draw() {
-        DrawRectangle(x,y,50, 50, RED);
+        DrawRectangle(x,y,50, 50, YELLOW);
     }
 
     Vector2 GenerateRandomPos() {
@@ -57,10 +57,12 @@ public:
     float speed_x, speed_y;
     float bounce_strength;
     int bullets;
+    int highscore;
     Rectangle GetRect();
     void drawHitbox(bool isColliding);
     void eat(bool isColliding);
     void UpdateWrap(int screen_width,int screen_height);
+    void UpdateHighscore();
 
     void Draw() {
         DrawCircle(pos_x, pos_y, radius, RED);
@@ -99,9 +101,9 @@ Player player;
 Ammo ammo;
 
 int main() {
-    const int screen_width = 1280;
-    const int screen_height = 800;
-    InitWindow(screen_width, screen_height, "wow");
+    const int screen_width = 1000;
+    const int screen_height = 1000;
+    InitWindow(screen_width, screen_height, "limited bullets");
     SetTargetFPS(60);
 
     player.pos_x = screen_width / 2;
@@ -113,6 +115,7 @@ int main() {
     player.accel_y = 0.3;
     player.bounce_strength = 15;
     player.bullets = 5;
+    player.highscore = 0;
     while (WindowShouldClose() == false && player.bullets >= 0) {
 
         if(IsKeyPressed(KEY_SPACE))
@@ -127,17 +130,20 @@ int main() {
                 Vector2 mousePosition = GetMousePosition();
                 player.Update(mousePosition);
                 DrawLine(player.pos_x, player.pos_y, mousePosition.x, mousePosition.y, Yellow);
+                player.UpdateHighscore(); // funny thing if you put this outside of the if statement you can keep adding highscore while paused
         }
         else
         {
-            DrawText("Press space to play", 400, 200, 20, LIGHTGRAY);
+            DrawText("Press space to play/pause", 350, 200, 20, LIGHTGRAY);
         }
         DrawText(TextFormat("%i", player.bullets), screen_width/2 -30, screen_height/2 -50, 100, DARKGRAY);
+        DrawText(TextFormat("%i", player.highscore), 100, 100, 50, DARKGRAY);
         player.Draw();
-        player.drawHitbox(isColliding);
+        // player.drawHitbox(isColliding); // right now useless
         player.UpdateWrap(screen_width,screen_height);
         player.eat(isColliding);
         ammo.draw();
+
 
 
         EndDrawing();
@@ -177,5 +183,12 @@ void Player::UpdateWrap(int screen_width,int screen_height)
     if(pos_y > screen_height + radius)
     {
         player.bullets = -1;
+    }
+}
+void Player::UpdateHighscore()
+{
+    if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+    {
+        player.highscore ++;
     }
 }
