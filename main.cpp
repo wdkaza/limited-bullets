@@ -60,6 +60,7 @@ public:
     Rectangle GetRect();
     void drawHitbox(bool isColliding);
     void eat(bool isColliding);
+    void UpdateWrap(int screen_width,int screen_height);
 
     void Draw() {
         DrawCircle(pos_x, pos_y, radius, RED);
@@ -93,7 +94,7 @@ public:
         }
 }
 };
-
+bool pause = true;
 Player player;
 Ammo ammo;
 
@@ -112,20 +113,30 @@ int main() {
     player.accel_y = 0.3;
     player.bounce_strength = 15;
     player.bullets = 5;
-
     while (WindowShouldClose() == false && player.bullets >= 0) {
+
+        if(IsKeyPressed(KEY_SPACE))
+        pause = !pause;
+
         BeginDrawing();
         ClearBackground(DarkGreen);
         bool isColliding = CheckCollisionCircleRec(Vector2{player.pos_x, player.pos_y}, player.radius, ammo.GetRect());
-
-        Vector2 mousePosition = GetMousePosition();
         DrawCircle(screen_width/2, screen_height/2, 150, Light_Grey);
+        if(!pause)
+        {
+                Vector2 mousePosition = GetMousePosition();
+                player.Update(mousePosition);
+                DrawLine(player.pos_x, player.pos_y, mousePosition.x, mousePosition.y, Yellow);
+        }
+        else
+        {
+            DrawText("Press space to play", 400, 200, 20, LIGHTGRAY);
+        }
         DrawText(TextFormat("%i", player.bullets), screen_width/2 -30, screen_height/2 -50, 100, DARKGRAY);
-        player.Update(mousePosition);
         player.Draw();
         player.drawHitbox(isColliding);
+        player.UpdateWrap(screen_width,screen_height);
         player.eat(isColliding);
-        DrawLine(player.pos_x, player.pos_y, mousePosition.x, mousePosition.y, Yellow);
         ammo.draw();
 
 
@@ -151,5 +162,20 @@ void Player::eat(bool isCollding)
     {
         ammo.GenRanPos();
         player.bullets++;
+    }
+}
+void Player::UpdateWrap(int screen_width,int screen_height)
+{
+    if(pos_x > screen_width + radius)
+    {
+        pos_x = -radius;
+    }
+    else if(pos_x < radius)
+    {
+        pos_x = screen_width + radius;
+    }
+    if(pos_y > screen_height + radius)
+    {
+        player.bullets = -1;
     }
 }
